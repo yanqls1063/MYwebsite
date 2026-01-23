@@ -3,11 +3,622 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>테스트</title>
+  <title>Aim Trainer</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#121a33;
+      --text:#e8ecff;
+      --muted:#a7b0d6;
+      --line:rgba(255,255,255,.10);
+      --good:#59f3a6;
+      --bad:#ff6b6b;
+      --accent:#7aa2ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 800px at 30% 10%, rgba(122,162,255,.22), transparent 55%),
+                  radial-gradient(900px 700px at 80% 30%, rgba(89,243,166,.12), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px;
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:16px;
+    }
+    @media (max-width: 900px){
+      .wrap{grid-template-columns: 1fr}
+    }
+    .card{
+      background: rgba(18,26,51,.92);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow: 0 18px 48px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    header{
+      padding:16px 16px 8px 16px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+    }
+    h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:6px 0 0 0;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .panel{
+      padding:14px 16px 16px 16px;
+      border-top:1px solid var(--line);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin:10px 0;
+    }
+    label{
+      font-size:13px;
+      color:var(--muted);
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      flex:1;
+    }
+    input[type="range"]{
+      width:100%;
+      accent-color: var(--accent);
+    }
+    .value{
+      font-variant-numeric: tabular-nums;
+      font-size:12px;
+      color:var(--text);
+      opacity:.9;
+    }
+    .btns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    button{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+    button:hover{background: rgba(255,255,255,.10)}
+    button.primary{
+      background: rgba(122,162,255,.18);
+      border-color: rgba(122,162,255,.35);
+    }
+    button.primary:hover{background: rgba(122,162,255,.26)}
+    button.danger{
+      background: rgba(255,107,107,.12);
+      border-color: rgba(255,107,107,.35);
+    }
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    .stat{
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(0,0,0,.12);
+    }
+    .stat .k{font-size:12px; color:var(--muted)}
+    .stat .v{
+      margin-top:6px;
+      font-size:18px;
+      font-weight:800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Arena */
+    .arena{
+      position:relative;
+      height: 72vh;
+      min-height: 520px;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,0)),
+        radial-gradient(1200px 900px at 50% 100%, rgba(0,0,0,.35), transparent 60%),
+        rgba(8,12,26,.75);
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      user-select:none;
+    }
+    .arenaTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.14);
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.05);
+    }
+    .pill b{
+      color:var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      opacity:.9;
+    }
+    .target{
+      position:absolute;
+      border-radius:999px;
+      transform: translate(-50%,-50%);
+      cursor: crosshair;
+      box-shadow:
+        0 12px 34px rgba(0,0,0,.45),
+        0 0 0 2px rgba(255,255,255,.10) inset;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0 18%, rgba(255,255,255,.2) 19% 22%, transparent 23%),
+        radial-gradient(circle at 50% 50%, rgba(122,162,255,.85) 0 42%, rgba(122,162,255,.35) 43% 60%, rgba(255,255,255,.06) 61% 100%);
+    }
+    .flash{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .08s;
+    }
+    .flash.good{background: rgba(89,243,166,.08)}
+    .flash.bad{background: rgba(255,107,107,.08)}
+    .flash.show{opacity:1}
+    .overlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      background: rgba(0,0,0,.25);
+      text-align:center;
+      padding:24px;
+    }
+    .overlay h2{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+    .overlay p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      max-width: 520px;
+      line-height:1.5;
+    }
+    .kbd{
+      padding:2px 8px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-variant-numeric: tabular-nums;
+      font-size:12px;
+    }
+  </style>
 </head>
-<body style="font-family: system-ui; padding: 24px;">
-  <h1>페이지 뜸 ✅</h1>
-  <p>여기 글자가 보이면, 배포/경로는 정상이고 기존 파일/스타일/스크립트 문제가 원인이야.</p>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <header>
+        <div>
+          <h1>Aim Trainer</h1>
+          <p class="sub">클릭으로 타겟 맞추기 · 점수/정확도/반응속도 측정</p>
+        </div>
+        <div class="pill" title="페이지가 업데이트 안 되면 Ctrl+F5">
+          버전 <b>1.0</b>
+        </div>
+      </header>
+
+      <div class="panel">
+        <div class="row">
+          <label>
+            제한 시간 <span class="value" id="vDuration"></span>
+            <input id="duration" type="range" min="10" max="120" step="5" value="30" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>
+            타겟 크기 <span class="value" id="vSize"></span>
+            <input id="size" type="range" min="16" max="90" step="2" value="42" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>
+            등장 간격 <span class="value" id="vInterval"></span>
+            <input id="interval" type="range" min="250" max="2000" step="50" value="700" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>
+            타겟 유지 시간(자동 이동) <span class="value" id="vLife"></span>
+            <input id="life" type="range" min="300" max="2500" step="50" value="1200" />
+          </label>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="startBtn">시작</button>
+          <button id="pauseBtn">일시정지</button>
+          <button class="danger" id="resetBtn">리셋</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="k">점수</div><div class="v" id="score">0</div></div>
+          <div class="stat"><div class="k">남은 시간</div><div class="v" id="time">0.0s</div></div>
+          <div class="stat"><div class="k">정확도</div><div class="v" id="acc">0%</div></div>
+          <div class="stat"><div class="k">평균 반응속도</div><div class="v" id="rt">-</div></div>
+          <div class="stat"><div class="k">명중</div><div class="v" id="hits">0</div></div>
+          <div class="stat"><div class="k">미스</div><div class="v" id="miss">0</div></div>
+        </div>
+
+        <p class="sub" style="margin-top:12px; line-height:1.5">
+          팁: 타겟이 작고 등장 간격이 짧을수록 더 어려워져. <span class="kbd">Space</span>로 시작/일시정지 가능.
+        </p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="arenaTop">
+        <div class="pill">상태: <b id="state">대기</b></div>
+        <div class="hint">타겟을 클릭하세요. 빈 공간 클릭은 미스로 카운트됩니다.</div>
+      </div>
+      <div class="arena" id="arena">
+        <div class="flash good" id="flashGood"></div>
+        <div class="flash bad" id="flashBad"></div>
+
+        <div class="overlay" id="overlay">
+          <h2>에임 연습장</h2>
+          <p>
+            왼쪽에서 설정을 조절하고 <b>시작</b>을 누르세요.<br>
+            목표: 제한 시간 동안 최대한 많이, 정확하게 맞추기.
+          </p>
+          <p class="sub">단축키: <span class="kbd">Space</span> 시작/일시정지 · <span class="kbd">R</span> 리셋</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  // Inputs
+  const durationEl = $("duration");
+  const sizeEl = $("size");
+  const intervalEl = $("interval");
+  const lifeEl = $("life");
+
+  // Labels
+  const vDuration = $("vDuration");
+  const vSize = $("vSize");
+  const vInterval = $("vInterval");
+  const vLife = $("vLife");
+
+  // Buttons
+  const startBtn = $("startBtn");
+  const pauseBtn = $("pauseBtn");
+  const resetBtn = $("resetBtn");
+
+  // Arena
+  const arena = $("arena");
+  const overlay = $("overlay");
+  const flashGood = $("flashGood");
+  const flashBad = $("flashBad");
+
+  // Stats
+  const stateEl = $("state");
+  const scoreEl = $("score");
+  const timeEl = $("time");
+  const accEl = $("acc");
+  const rtEl = $("rt");
+  const hitsEl = $("hits");
+  const missEl = $("miss");
+
+  // Game state
+  let running = false;
+  let ended = false;
+
+  let score = 0;
+  let hits = 0;
+  let miss = 0;
+  let shots = 0;
+
+  let reactionTimes = [];
+  let targetBornAt = 0;
+
+  let tLeftMs = 0;
+  let tickTimer = null;
+  let spawnTimer = null;
+  let lifeTimer = null;
+
+  let currentTarget = null;
+
+  function fmtMs(ms){
+    return Math.round(ms) + "ms";
+  }
+  function fmtPct(x){
+    return Math.round(x) + "%";
+  }
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+  function updateLabels(){
+    vDuration.textContent = `${durationEl.value}s`;
+    vSize.textContent = `${sizeEl.value}px`;
+    vInterval.textContent = `${intervalEl.value}ms`;
+    vLife.textContent = `${lifeEl.value}ms`;
+  }
+
+  function setState(text){
+    stateEl.textContent = text;
+  }
+
+  function updateStats(){
+    scoreEl.textContent = score;
+    hitsEl.textContent = hits;
+    missEl.textContent = miss;
+
+    const acc = shots === 0 ? 0 : (hits / shots) * 100;
+    accEl.textContent = fmtPct(acc);
+
+    if (reactionTimes.length === 0){
+      rtEl.textContent = "-";
+    } else {
+      const avg = reactionTimes.reduce((a,b)=>a+b,0) / reactionTimes.length;
+      rtEl.textContent = fmtMs(avg);
+    }
+  }
+
+  function showFlash(kind){
+    const el = kind === "good" ? flashGood : flashBad;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 90);
+  }
+
+  function clearTimers(){
+    if (tickTimer) clearInterval(tickTimer);
+    if (spawnTimer) clearInterval(spawnTimer);
+    if (lifeTimer) clearTimeout(lifeTimer);
+    tickTimer = spawnTimer = lifeTimer = null;
+  }
+
+  function removeTarget(){
+    if (currentTarget){
+      currentTarget.remove();
+      currentTarget = null;
+    }
+    if (lifeTimer){
+      clearTimeout(lifeTimer);
+      lifeTimer = null;
+    }
+  }
+
+  function spawnTarget(){
+    removeTarget();
+    if (!running || ended) return;
+
+    const size = Number(sizeEl.value);
+    const rect = arena.getBoundingClientRect();
+
+    // Spawn inside arena (below top bar already outside; arena is clean)
+    const pad = size * 0.65;
+    const x = clamp(Math.random() * rect.width, pad, rect.width - pad);
+    const y = clamp(Math.random() * rect.height, pad, rect.height - pad);
+
+    const t = document.createElement("div");
+    t.className = "target";
+    t.style.width = size + "px";
+    t.style.height = size + "px";
+    t.style.left = x + "px";
+    t.style.top = y + "px";
+
+    targetBornAt = performance.now();
+
+    t.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!running || ended) return;
+
+      const rt = performance.now() - targetBornAt;
+      reactionTimes.push(rt);
+
+      hits++;
+      shots++;
+      score++;
+
+      showFlash("good");
+      updateStats();
+
+      spawnTarget(); // immediately spawn next for snappy practice
+    });
+
+    arena.appendChild(t);
+    currentTarget = t;
+
+    // Auto-move if not hit within life time
+    lifeTimer = setTimeout(() => {
+      if (!running || ended) return;
+      // Count as a "shot"? No. Only clicks are shots.
+      spawnTarget();
+    }, Number(lifeEl.value));
+  }
+
+  function startGame(){
+    if (running) return;
+    if (ended){
+      // restart fresh
+      resetGame();
+    }
+    running = true;
+    ended = false;
+    overlay.style.display = "none";
+    setState("진행 중");
+
+    tLeftMs = Number(durationEl.value) * 1000;
+
+    // Tick timer for time display
+    const startedAt = performance.now();
+    tickTimer = setInterval(() => {
+      const elapsed = performance.now() - startedAt;
+      const remain = Math.max(0, tLeftMs - elapsed);
+      timeEl.textContent = (remain/1000).toFixed(1) + "s";
+
+      if (remain <= 0){
+        endGame();
+      }
+    }, 50);
+
+    // Spawn loop
+    spawnTarget();
+    spawnTimer = setInterval(() => {
+      if (!running || ended) return;
+      // If target still exists, keep it; we also have lifeTimer.
+      // But to enforce spawn rhythm, we can respawn here:
+      spawnTarget();
+    }, Number(intervalEl.value));
+  }
+
+  function pauseGame(){
+    if (!running) return;
+    running = false;
+    setState("일시정지");
+    overlay.style.display = "flex";
+    overlay.querySelector("h2").textContent = "일시정지";
+    overlay.querySelector("p").innerHTML = `계속하려면 <b>시작</b>을 누르거나 <span class="kbd">Space</span>를 누르세요.`;
+    clearTimers();
+    removeTarget();
+  }
+
+  function endGame(){
+    ended = true;
+    running = false;
+    clearTimers();
+    removeTarget();
+
+    setState("종료");
+    overlay.style.display = "flex";
+    overlay.querySelector("h2").textContent = "결과";
+    const acc = shots === 0 ? 0 : (hits / shots) * 100;
+    const avg = reactionTimes.length ? (reactionTimes.reduce((a,b)=>a+b,0)/reactionTimes.length) : 0;
+
+    overlay.querySelector("p").innerHTML =
+      `점수 <b>${score}</b> · 정확도 <b>${Math.round(acc)}%</b> · 평균 반응속도 <b>${reactionTimes.length ? Math.round(avg)+"ms" : "-"}</b><br>
+       다시 하려면 <b>시작</b> 또는 <span class="kbd">R</span>.`;
+    timeEl.textContent = "0.0s";
+  }
+
+  function resetGame(){
+    clearTimers();
+    removeTarget();
+
+    running = false;
+    ended = false;
+
+    score = 0;
+    hits = 0;
+    miss = 0;
+    shots = 0;
+    reactionTimes = [];
+
+    updateStats();
+    setState("대기");
+    timeEl.textContent = Number(durationEl.value).toFixed(1) + "s";
+
+    overlay.style.display = "flex";
+    overlay.querySelector("h2").textContent = "에임 연습장";
+    overlay.querySelector("p").innerHTML =
+      `왼쪽에서 설정을 조절하고 <b>시작</b>을 누르세요.<br>목표: 제한 시간 동안 최대한 많이, 정확하게 맞추기.`;
+  }
+
+  // Miss clicks: clicking arena but not target
+  arena.addEventListener("click", () => {
+    if (!running || ended) return;
+    shots++;
+    miss++;
+    showFlash("bad");
+    updateStats();
+  });
+
+  // Controls
+  startBtn.addEventListener("click", startGame);
+  pauseBtn.addEventListener("click", pauseGame);
+  resetBtn.addEventListener("click", resetGame);
+
+  // Update spawn interval live (if running, restart timers neatly)
+  function onSettingChange(){
+    updateLabels();
+    if (running && !ended){
+      // restart spawn loop with new interval/life/size, keep time running by pausing/resuming quickly
+      // simplest: pause and start fresh with same stats? No.
+      // We'll just restart spawn timer; tick stays.
+      if (spawnTimer) clearInterval(spawnTimer);
+      if (lifeTimer) clearTimeout(lifeTimer);
+      spawnTarget();
+      spawnTimer = setInterval(() => {
+        if (!running || ended) return;
+        spawnTarget();
+      }, Number(intervalEl.value));
+    } else {
+      timeEl.textContent = Number(durationEl.value).toFixed(1) + "s";
+    }
+  }
+
+  [durationEl, sizeEl, intervalEl, lifeEl].forEach(el => el.addEventListener("input", onSettingChange));
+
+  // Hotkeys
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space"){
+      e.preventDefault();
+      if (running) pauseGame();
+      else startGame();
+    }
+    if (e.key.toLowerCase() === "r"){
+      resetGame();
+    }
+  });
+
+  // Init
+  updateLabels();
+  resetGame();
+})();
+</script>
 </body>
-  <body style="color:#111;background:#fff;display:block;visibility:visible;opacity:1;">
 </html>
