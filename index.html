@@ -14,6 +14,10 @@
       --good:#59f3a6;
       --bad:#ff6b6b;
       --accent:#7aa2ff;
+
+      /* cursor */
+      --cursor-color: #ffffff;
+      --cursor-size: 26px;
     }
     *{box-sizing:border-box}
     body{
@@ -74,6 +78,15 @@
       outline:none;
     }
     input[type="checkbox"]{ width:18px; height:18px; accent-color: var(--accent); }
+    input[type="color"]{
+      width: 48px;
+      height: 34px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      padding:0;
+      cursor:pointer;
+    }
 
     .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     button{
@@ -139,6 +152,8 @@
       touch-action: manipulation;
     }
     .arena.fullHeight{ aspect-ratio:auto; height:72vh; min-height:520px; }
+    .arena.cursorHidden{ cursor: none; } /* 커스텀 커서 켰을 때 기본 포인터 숨김 */
+
     .arenaTop{
       display:flex;
       align-items:center;
@@ -175,7 +190,53 @@
     .flash{ position:absolute; inset:0; pointer-events:none; opacity:0; transition: opacity .08s; }
     .flash.good{ background: rgba(89,243,166,.08); }
     .flash.bad{ background: rgba(255,107,107,.08); }
+    .flash.cps{ background: rgba(122,162,255,.08); } /* CPS 클릭 반짝임 */
     .flash.show{ opacity:1; }
+
+    /* Custom cursor */
+    .cursorFx{
+      position:absolute;
+      left:0; top:0;
+      transform: translate(-50%,-50%);
+      pointer-events:none;
+      z-index: 40;
+      width: var(--cursor-size);
+      height: var(--cursor-size);
+      display:none;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.45));
+    }
+    .cursorFx.on{ display:block; }
+    .cursorFx.dot{
+      border-radius:999px;
+      background: var(--cursor-color);
+      box-shadow: 0 0 0 2px rgba(0,0,0,.35);
+    }
+    .cursorFx.ring{
+      border-radius:999px;
+      border: 3px solid var(--cursor-color);
+      background: rgba(0,0,0,.08);
+      box-shadow: 0 0 0 2px rgba(0,0,0,.25);
+    }
+    .cursorFx.cross{
+      background:
+        linear-gradient(var(--cursor-color), var(--cursor-color)) center/2px 100% no-repeat,
+        linear-gradient(var(--cursor-color), var(--cursor-color)) center/100% 2px no-repeat;
+    }
+    .cursorFx.cross::after{
+      content:"";
+      position:absolute;
+      inset: 38%;
+      border-radius:999px;
+      background: rgba(0,0,0,.20);
+      box-shadow: 0 0 0 2px rgba(0,0,0,.22);
+    }
+    .cursorFx.plusdot{
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 50%, var(--cursor-color) 0 14%, transparent 15%),
+        linear-gradient(var(--cursor-color), var(--cursor-color)) center/2px 100% no-repeat,
+        linear-gradient(var(--cursor-color), var(--cursor-color)) center/100% 2px no-repeat;
+    }
 
     .overlay{
       position:absolute; inset:0;
@@ -223,7 +284,7 @@
           <h1>Aim Trainer + CPS</h1>
           <p class="sub">에임 연습 + CPS 테스트 · 전체화면/사운드/동시 타겟/무제한 유지</p>
         </div>
-        <div class="pill">버전 <b>1.2</b></div>
+        <div class="pill">버전 <b>1.3</b></div>
       </header>
 
       <div class="panel">
@@ -265,6 +326,52 @@
             사운드 볼륨 <span class="value" id="vVol"></span>
             <input id="volume" type="range" min="0" max="100" step="1" value="35" />
           </label>
+        </div>
+
+        <!-- NEW: Vibration -->
+        <div class="checkbox">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">진동 (Aim 클릭)</div>
+            <div class="value">모바일에서만 동작할 수 있어요(navigator.vibrate)</div>
+          </div>
+          <input id="vibeOn" type="checkbox" />
+        </div>
+
+        <!-- NEW: Cursor customization -->
+        <div class="checkbox">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">커스텀 마우스 포인터</div>
+            <div class="value">아레나에서 기본 포인터 대신 눈에 잘 띄는 포인터 표시</div>
+          </div>
+          <input id="cursorOn" type="checkbox" checked />
+        </div>
+
+        <div class="select">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">포인터 스타일</div>
+            <div class="value">Dot / Ring / Cross / Plus+Dot</div>
+          </div>
+          <select id="cursorStyle">
+            <option value="dot">Dot</option>
+            <option value="ring">Ring</option>
+            <option value="cross" selected>Cross</option>
+            <option value="plusdot">Plus+Dot</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>
+            포인터 크기 <span class="value" id="vCursorSize"></span>
+            <input id="cursorSize" type="range" min="10" max="90" step="1" value="26" />
+          </label>
+        </div>
+
+        <div class="select">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">포인터 색</div>
+            <div class="value">배경이 어두우면 흰색/연두 추천</div>
+          </div>
+          <input id="cursorColor" type="color" value="#ffffff" />
         </div>
 
         <!-- AIM SETTINGS -->
@@ -372,6 +479,10 @@
         <div class="arena" id="arena">
           <div class="flash good" id="flashGood"></div>
           <div class="flash bad" id="flashBad"></div>
+          <div class="flash cps" id="flashCps"></div>
+
+          <!-- NEW: custom cursor element -->
+          <div class="cursorFx cross" id="cursorFx"></div>
 
           <div class="overlay" id="overlay">
             <h2 id="overlayTitle">시작하기</h2>
@@ -399,6 +510,14 @@
   const soundOnEl = $("soundOn");
   const volumeEl = $("volume");
   const vVol = $("vVol");
+
+  // NEW: Vibration + Cursor
+  const vibeOnEl = $("vibeOn");
+  const cursorOnEl = $("cursorOn");
+  const cursorStyleEl = $("cursorStyle");
+  const cursorSizeEl = $("cursorSize");
+  const cursorColorEl = $("cursorColor");
+  const vCursorSize = $("vCursorSize");
 
   // Aim inputs
   const durationEl = $("duration");
@@ -434,7 +553,11 @@
   const overlayFsStart = $("overlayFsStart");
   const flashGood = $("flashGood");
   const flashBad = $("flashBad");
+  const flashCps = $("flashCps");
   const hintText = $("hintText");
+
+  // NEW: custom cursor element
+  const cursorFx = $("cursorFx");
 
   // Sections
   const aimSettings = $("aimSettings");
@@ -506,6 +629,15 @@
   }
 
   // -------------------------
+  // NEW: Vibration helper
+  // -------------------------
+  function vibrate(pattern){
+    if (!vibeOnEl.checked) return;
+    if (!("vibrate" in navigator)) return;
+    try { navigator.vibrate(pattern); } catch(e) {}
+  }
+
+  // -------------------------
   // Shared helpers
   // -------------------------
   function fmtMs(ms){ return Math.round(ms) + "ms"; }
@@ -517,6 +649,11 @@
     const el = kind === "good" ? flashGood : flashBad;
     el.classList.add("show");
     setTimeout(() => el.classList.remove("show"), 90);
+  }
+
+  function showFlashCps(){
+    flashCps.classList.add("show");
+    setTimeout(() => flashCps.classList.remove("show"), 70);
   }
 
   async function toggleFullscreen(){
@@ -545,6 +682,53 @@
     }
     arena.style.aspectRatio = v.replace(":", " / ");
   }
+
+  // -------------------------
+  // NEW: Cursor customization
+  // -------------------------
+  function applyCursorSettings(){
+    const on = cursorOnEl.checked;
+
+    // arena cursor behavior
+    arena.classList.toggle("cursorHidden", on);
+    cursorFx.classList.toggle("on", on);
+
+    // style
+    const style = cursorStyleEl.value;
+    cursorFx.classList.remove("dot","ring","cross","plusdot");
+    cursorFx.classList.add(style);
+
+    // size + color via CSS vars
+    const size = Number(cursorSizeEl.value);
+    vCursorSize.textContent = `${size}px`;
+    arena.style.setProperty("--cursor-size", size + "px");
+
+    const color = cursorColorEl.value || "#ffffff";
+    arena.style.setProperty("--cursor-color", color);
+  }
+
+  function moveCursorToClientXY(clientX, clientY){
+    if (!cursorOnEl.checked) return;
+    const rect = arena.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    cursorFx.style.left = x + "px";
+    cursorFx.style.top = y + "px";
+  }
+
+  arena.addEventListener("mousemove", (e) => {
+    moveCursorToClientXY(e.clientX, e.clientY);
+  }, {passive:true});
+
+  // Touch: show cursor where you touch (선택)
+  arena.addEventListener("touchstart", (e) => {
+    const t = e.touches?.[0];
+    if (t) moveCursorToClientXY(t.clientX, t.clientY);
+  }, {passive:true});
+  arena.addEventListener("touchmove", (e) => {
+    const t = e.touches?.[0];
+    if (t) moveCursorToClientXY(t.clientX, t.clientY);
+  }, {passive:true});
 
   // -------------------------
   // MODE: Aim Trainer
@@ -633,6 +817,7 @@
 
       hits++; shots++; score++;
       sfxHit(); showFlash("good");
+      vibrate([12]); // NEW: hit vibration
       aimUpdateStats();
 
       t.remove();
@@ -884,7 +1069,7 @@
       cpsSettings.style.display = "";
       statsAim.style.display = "none";
       statsCps.style.display = "";
-      hintText.textContent = "CPS: 아레나 아무 곳이나 클릭해서 속도를 측정";
+      hintText.textContent = "CPS: 아레나 아무 곳이나 클릭해서 속도를 측정 (클릭 시 반짝임)";
 
       overlayTitle.textContent = "CPS 테스트";
       overlayDesc.innerHTML = `왼쪽에서 시간을 정하고 <b>시작</b>을 누르세요.<br>아레나 아무 곳이나 클릭하면 카운트됩니다.`;
@@ -939,6 +1124,7 @@
 
   function refreshLabelsAndDisables(){
     aimUpdateLabels();
+    applyCursorSettings(); // NEW
 
     // unlimited aim behavior
     const isAim = currentMode() === "aim";
@@ -966,6 +1152,7 @@
       miss++;
       sfxMiss();
       showFlash("bad");
+      vibrate([18]); // NEW: miss vibration
       aimUpdateStats();
       return;
     }
@@ -974,6 +1161,7 @@
     if (!cpsRunning || cpsEnded) return;
     cpsClicks++;
     sfxClick();
+    showFlashCps(); // NEW: CPS flash
 
     // update CPS instantly for responsiveness
     const elapsed = performance.now() - cpsStartedAtPerf;
@@ -1031,6 +1219,9 @@
   ratioEl.addEventListener("change", onAnySettingChange);
   soundOnEl.addEventListener("input", onAnySettingChange);
   volumeEl.addEventListener("input", onAnySettingChange);
+
+  // NEW: vibe + cursor settings
+  [vibeOnEl, cursorOnEl, cursorStyleEl, cursorSizeEl, cursorColorEl].forEach(el => el.addEventListener("input", onAnySettingChange));
 
   // Aim settings
   [durationEl, sizeEl, intervalEl, lifeEl, countEl, unlimitedLifeEl].forEach(el => el.addEventListener("input", onAnySettingChange));
