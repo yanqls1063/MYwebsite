@@ -29,7 +29,7 @@
       margin:0 auto;
       padding:18px;
       display:grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: 360px 1fr;
       gap:16px;
     }
     @media (max-width: 900px){
@@ -75,18 +75,41 @@
       color:var(--muted);
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:6px;
       flex:1;
-    }
-    input[type="range"]{
-      width:100%;
-      accent-color: var(--accent);
     }
     .value{
       font-variant-numeric: tabular-nums;
       font-size:12px;
       color:var(--text);
       opacity:.9;
+    }
+    input[type="range"]{
+      width:100%;
+      accent-color: var(--accent);
+    }
+    .select, .checkbox{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(0,0,0,.10);
+    }
+    select{
+      width: 160px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:8px 10px;
+      outline:none;
+    }
+    input[type="checkbox"]{
+      width:18px; height:18px;
+      accent-color: var(--accent);
     }
     .btns{
       display:flex;
@@ -103,6 +126,9 @@
       cursor:pointer;
       font-weight:600;
       letter-spacing:.2px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
     button:hover{background: rgba(255,255,255,.10)}
     button.primary{
@@ -135,10 +161,15 @@
     }
 
     /* Arena */
+    .arenaWrap{
+      padding:14px;
+      border-top:1px solid var(--line);
+    }
     .arena{
       position:relative;
-      height: 72vh;
-      min-height: 520px;
+      width:100%;
+      height:auto;
+      min-height: 420px;
       background:
         linear-gradient(to bottom, rgba(255,255,255,.06), rgba(255,255,255,0)),
         radial-gradient(1200px 900px at 50% 100%, rgba(0,0,0,.35), transparent 60%),
@@ -147,6 +178,14 @@
       border-radius:18px;
       overflow:hidden;
       user-select:none;
+
+      /* default ratio */
+      aspect-ratio: 16 / 9;
+    }
+    .arena.fullHeight{
+      aspect-ratio: auto;
+      height: 72vh;
+      min-height: 520px;
     }
     .arenaTop{
       display:flex;
@@ -167,6 +206,7 @@
       font-size:12px;
       color:var(--muted);
       background: rgba(255,255,255,.05);
+      white-space:nowrap;
     }
     .pill b{
       color:var(--text);
@@ -232,6 +272,21 @@
       font-variant-numeric: tabular-nums;
       font-size:12px;
     }
+
+    /* Fullscreen polish */
+    .arena:fullscreen{
+      border-radius: 0;
+      border: none;
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      background:
+        radial-gradient(1200px 900px at 50% 100%, rgba(0,0,0,.35), transparent 60%),
+        rgba(8,12,26,.92);
+    }
+    .arena:fullscreen .arenaTop{
+      border-radius:0;
+    }
   </style>
 </head>
 <body>
@@ -240,18 +295,16 @@
       <header>
         <div>
           <h1>Aim Trainer</h1>
-          <p class="sub">클릭으로 타겟 맞추기 · 점수/정확도/반응속도 측정</p>
+          <p class="sub">사운드 · 화면비율 · 전체화면 · 동시타겟 · 무제한 유지시간</p>
         </div>
-        <div class="pill" title="페이지가 업데이트 안 되면 Ctrl+F5">
-          버전 <b>1.0</b>
-        </div>
+        <div class="pill" title="페이지가 업데이트 안 되면 Ctrl+F5">버전 <b>1.1</b></div>
       </header>
 
       <div class="panel">
         <div class="row">
           <label>
             제한 시간 <span class="value" id="vDuration"></span>
-            <input id="duration" type="range" min="10" max="120" step="5" value="30" />
+            <input id="duration" type="range" min="10" max="180" step="5" value="30" />
           </label>
         </div>
 
@@ -264,15 +317,58 @@
 
         <div class="row">
           <label>
-            등장 간격 <span class="value" id="vInterval"></span>
-            <input id="interval" type="range" min="250" max="2000" step="50" value="700" />
+            등장 간격(리젠 속도) <span class="value" id="vInterval"></span>
+            <input id="interval" type="range" min="200" max="2500" step="50" value="700" />
           </label>
         </div>
 
         <div class="row">
           <label>
-            타겟 유지 시간(자동 이동) <span class="value" id="vLife"></span>
-            <input id="life" type="range" min="300" max="2500" step="50" value="1200" />
+            타겟 유지 시간 <span class="value" id="vLife"></span>
+            <input id="life" type="range" min="300" max="4000" step="50" value="1200" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label>
+            동시 타겟 개수 <span class="value" id="vCount"></span>
+            <input id="count" type="range" min="1" max="10" step="1" value="1" />
+          </label>
+        </div>
+
+        <div class="select" style="margin-top:10px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">화면 비율</div>
+            <div class="value">아레나(게임 화면) 크기/비율</div>
+          </div>
+          <select id="ratio">
+            <option value="16:9" selected>16:9</option>
+            <option value="4:3">4:3</option>
+            <option value="1:1">1:1</option>
+            <option value="full">세로 크게(뷰 높이)</option>
+          </select>
+        </div>
+
+        <div class="checkbox" style="margin-top:10px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">타겟 유지시간 무제한</div>
+            <div class="value">켜면 타겟이 사라지지 않고, “맞추면” 다음 타겟이 나옵니다</div>
+          </div>
+          <input id="unlimitedLife" type="checkbox" />
+        </div>
+
+        <div class="checkbox" style="margin-top:10px;">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:13px;color:var(--muted);">사운드</div>
+            <div class="value">명중/미스 효과음</div>
+          </div>
+          <input id="soundOn" type="checkbox" checked />
+        </div>
+
+        <div class="row">
+          <label>
+            사운드 볼륨 <span class="value" id="vVol"></span>
+            <input id="volume" type="range" min="0" max="100" step="1" value="35" />
           </label>
         </div>
 
@@ -292,7 +388,7 @@
         </div>
 
         <p class="sub" style="margin-top:12px; line-height:1.5">
-          팁: 타겟이 작고 등장 간격이 짧을수록 더 어려워져. <span class="kbd">Space</span>로 시작/일시정지 가능.
+          단축키: <span class="kbd">Space</span> 시작/일시정지 · <span class="kbd">R</span> 리셋 · <span class="kbd">F</span> 전체화면
         </p>
       </div>
     </section>
@@ -300,19 +396,25 @@
     <section class="card">
       <div class="arenaTop">
         <div class="pill">상태: <b id="state">대기</b></div>
-        <div class="hint">타겟을 클릭하세요. 빈 공간 클릭은 미스로 카운트됩니다.</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="hint">타겟 클릭 = 명중 · 빈 곳 클릭 = 미스</div>
+          <button id="fsBtn" title="전체화면 (F)">전체화면</button>
+        </div>
       </div>
-      <div class="arena" id="arena">
-        <div class="flash good" id="flashGood"></div>
-        <div class="flash bad" id="flashBad"></div>
 
-        <div class="overlay" id="overlay">
-          <h2>에임 연습장</h2>
-          <p>
-            왼쪽에서 설정을 조절하고 <b>시작</b>을 누르세요.<br>
-            목표: 제한 시간 동안 최대한 많이, 정확하게 맞추기.
-          </p>
-          <p class="sub">단축키: <span class="kbd">Space</span> 시작/일시정지 · <span class="kbd">R</span> 리셋</p>
+      <div class="arenaWrap">
+        <div class="arena" id="arena">
+          <div class="flash good" id="flashGood"></div>
+          <div class="flash bad" id="flashBad"></div>
+
+          <div class="overlay" id="overlay">
+            <h2>에임 연습장</h2>
+            <p>
+              왼쪽에서 설정을 조절하고 <b>시작</b>을 누르세요.<br>
+              목표: 제한 시간 동안 최대한 많이, 정확하게 맞추기.
+            </p>
+            <p class="sub">추천: 동시 타겟 3~5로 올리면 추적 난이도 확 올라가!</p>
+          </div>
         </div>
       </div>
     </section>
@@ -327,17 +429,25 @@
   const sizeEl = $("size");
   const intervalEl = $("interval");
   const lifeEl = $("life");
+  const countEl = $("count");
+  const ratioEl = $("ratio");
+  const unlimitedLifeEl = $("unlimitedLife");
+  const soundOnEl = $("soundOn");
+  const volumeEl = $("volume");
 
   // Labels
   const vDuration = $("vDuration");
   const vSize = $("vSize");
   const vInterval = $("vInterval");
   const vLife = $("vLife");
+  const vCount = $("vCount");
+  const vVol = $("vVol");
 
   // Buttons
   const startBtn = $("startBtn");
   const pauseBtn = $("pauseBtn");
   const resetBtn = $("resetBtn");
+  const fsBtn = $("fsBtn");
 
   // Arena
   const arena = $("arena");
@@ -354,7 +464,56 @@
   const hitsEl = $("hits");
   const missEl = $("miss");
 
+  // -------------------------
+  // Sound (Web Audio)
+  // -------------------------
+  let audioCtx = null;
+
+  function ensureAudio(){
+    if (!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended"){
+      audioCtx.resume().catch(()=>{});
+    }
+  }
+
+  function playTone({freq=440, duration=0.06, type="sine", gain=0.08, ramp=0.015}){
+    if (!soundOnEl.checked) return;
+    ensureAudio();
+
+    const vol = Number(volumeEl.value) / 100;
+    const g = audioCtx.createGain();
+    const o = audioCtx.createOscillator();
+
+    o.type = type;
+    o.frequency.value = freq;
+
+    const now = audioCtx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001, gain * vol), now + ramp);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    o.connect(g);
+    g.connect(audioCtx.destination);
+
+    o.start(now);
+    o.stop(now + duration + 0.01);
+  }
+
+  function sfxHit(){
+    // crisp "tick"
+    playTone({freq: 880, duration: 0.05, type: "square", gain: 0.06, ramp: 0.01});
+    playTone({freq: 1320, duration: 0.04, type: "sine", gain: 0.04, ramp: 0.01});
+  }
+  function sfxMiss(){
+    // low "thud"
+    playTone({freq: 180, duration: 0.08, type: "triangle", gain: 0.08, ramp: 0.01});
+  }
+
+  // -------------------------
   // Game state
+  // -------------------------
   let running = false;
   let ended = false;
 
@@ -364,33 +523,32 @@
   let shots = 0;
 
   let reactionTimes = [];
-  let targetBornAt = 0;
 
-  let tLeftMs = 0;
+  // timers
   let tickTimer = null;
-  let spawnTimer = null;
-  let lifeTimer = null;
+  let spawnTimer = null;     // used in normal mode for respawn rhythm
+  let lifeTimers = new Map();// per-target timers in normal mode
+  let tLeftMs = 0;
+  let startedAtPerf = 0;
 
-  let currentTarget = null;
+  // targets
+  // Map<HTMLElement, bornAtMs>
+  let targets = new Map();
 
-  function fmtMs(ms){
-    return Math.round(ms) + "ms";
-  }
-  function fmtPct(x){
-    return Math.round(x) + "%";
-  }
+  function fmtMs(ms){ return Math.round(ms) + "ms"; }
+  function fmtPct(x){ return Math.round(x) + "%"; }
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 
   function updateLabels(){
     vDuration.textContent = `${durationEl.value}s`;
     vSize.textContent = `${sizeEl.value}px`;
     vInterval.textContent = `${intervalEl.value}ms`;
-    vLife.textContent = `${lifeEl.value}ms`;
+    vLife.textContent = unlimitedLifeEl.checked ? `무제한` : `${lifeEl.value}ms`;
+    vCount.textContent = `${countEl.value}개`;
+    vVol.textContent = `${volumeEl.value}%`;
   }
 
-  function setState(text){
-    stateEl.textContent = text;
-  }
+  function setState(text){ stateEl.textContent = text; }
 
   function updateStats(){
     scoreEl.textContent = score;
@@ -417,29 +575,43 @@
   function clearTimers(){
     if (tickTimer) clearInterval(tickTimer);
     if (spawnTimer) clearInterval(spawnTimer);
-    if (lifeTimer) clearTimeout(lifeTimer);
-    tickTimer = spawnTimer = lifeTimer = null;
+    tickTimer = spawnTimer = null;
+
+    for (const [,tid] of lifeTimers){
+      clearTimeout(tid);
+    }
+    lifeTimers.clear();
   }
 
-  function removeTarget(){
-    if (currentTarget){
-      currentTarget.remove();
-      currentTarget = null;
+  function removeAllTargets(){
+    for (const [el] of targets){
+      el.remove();
     }
-    if (lifeTimer){
-      clearTimeout(lifeTimer);
-      lifeTimer = null;
+    targets.clear();
+
+    for (const [,tid] of lifeTimers){
+      clearTimeout(tid);
     }
+    lifeTimers.clear();
   }
 
-  function spawnTarget(){
-    removeTarget();
-    if (!running || ended) return;
+  function applyRatio(){
+    const v = ratioEl.value;
+    arena.classList.remove("fullHeight");
+    if (v === "full"){
+      arena.classList.add("fullHeight");
+      return;
+    }
+    if (v === "16:9") arena.style.aspectRatio = "16 / 9";
+    if (v === "4:3") arena.style.aspectRatio = "4 / 3";
+    if (v === "1:1") arena.style.aspectRatio = "1 / 1";
+  }
 
+  function spawnOneTarget(){
     const size = Number(sizeEl.value);
     const rect = arena.getBoundingClientRect();
 
-    // Spawn inside arena (below top bar already outside; arena is clean)
+    // Keep within bounds
     const pad = size * 0.65;
     const x = clamp(Math.random() * rect.width, pad, rect.width - pad);
     const y = clamp(Math.random() * rect.height, pad, rect.height - pad);
@@ -451,69 +623,135 @@
     t.style.left = x + "px";
     t.style.top = y + "px";
 
-    targetBornAt = performance.now();
+    const bornAt = performance.now();
+    targets.set(t, bornAt);
 
     t.addEventListener("click", (e) => {
       e.stopPropagation();
       if (!running || ended) return;
 
-      const rt = performance.now() - targetBornAt;
+      const born = targets.get(t) ?? performance.now();
+      const rt = performance.now() - born;
       reactionTimes.push(rt);
 
       hits++;
       shots++;
       score++;
 
+      sfxHit();
       showFlash("good");
       updateStats();
 
-      spawnTarget(); // immediately spawn next for snappy practice
+      // remove current target
+      t.remove();
+      targets.delete(t);
+
+      // clear life timer for this target if exists
+      const tid = lifeTimers.get(t);
+      if (tid) clearTimeout(tid);
+      lifeTimers.delete(t);
+
+      // In unlimited life mode: only spawn on hit to maintain count
+      // In normal mode: also maintain count immediately (snappy feel)
+      maintainTargetCount(true);
     });
 
     arena.appendChild(t);
-    currentTarget = t;
 
-    // Auto-move if not hit within life time
-    lifeTimer = setTimeout(() => {
-      if (!running || ended) return;
-      // Count as a "shot"? No. Only clicks are shots.
-      spawnTarget();
-    }, Number(lifeEl.value));
+    // normal mode: auto-respawn after life
+    if (!unlimitedLifeEl.checked){
+      const tid = setTimeout(() => {
+        if (!running || ended) return;
+        if (!targets.has(t)) return;
+
+        // target "expired" -> respawn (no shot counted)
+        t.remove();
+        targets.delete(t);
+        lifeTimers.delete(t);
+
+        maintainTargetCount(false);
+      }, Number(lifeEl.value));
+
+      lifeTimers.set(t, tid);
+    }
+  }
+
+  function maintainTargetCount(onHit){
+    const desired = Number(countEl.value);
+
+    // Unlimited mode rule: next target appears when you hit (and to fill missing ones initially).
+    // So if unlimitedLife is ON and this call isn't from a hit, we only fill when starting/initializing.
+    if (unlimitedLifeEl.checked && !onHit){
+      // fill only if currently below desired (e.g. start/reset) -> allowed
+      while (targets.size < desired) spawnOneTarget();
+      return;
+    }
+
+    // Normal mode: fill to desired anytime; Unlimited+onHit: fill to desired upon hit
+    while (targets.size < desired) spawnOneTarget();
+
+    // If user lowered count mid-game, trim extras
+    if (targets.size > desired){
+      let removeN = targets.size - desired;
+      for (const [el] of targets){
+        if (removeN <= 0) break;
+        el.remove();
+        targets.delete(el);
+        const tid = lifeTimers.get(el);
+        if (tid) clearTimeout(tid);
+        lifeTimers.delete(el);
+        removeN--;
+      }
+    }
   }
 
   function startGame(){
+    // unlocking audio on user gesture
+    if (soundOnEl.checked) ensureAudio();
+
     if (running) return;
-    if (ended){
-      // restart fresh
-      resetGame();
-    }
+    if (ended) resetGame();
+
     running = true;
     ended = false;
     overlay.style.display = "none";
     setState("진행 중");
 
     tLeftMs = Number(durationEl.value) * 1000;
+    startedAtPerf = performance.now();
 
-    // Tick timer for time display
-    const startedAt = performance.now();
+    // time tick
     tickTimer = setInterval(() => {
-      const elapsed = performance.now() - startedAt;
+      const elapsed = performance.now() - startedAtPerf;
       const remain = Math.max(0, tLeftMs - elapsed);
       timeEl.textContent = (remain/1000).toFixed(1) + "s";
-
-      if (remain <= 0){
-        endGame();
-      }
+      if (remain <= 0) endGame();
     }, 50);
 
-    // Spawn loop
-    spawnTarget();
-    spawnTimer = setInterval(() => {
-      if (!running || ended) return;
-      // If target still exists, keep it; we also have lifeTimer.
-      // But to enforce spawn rhythm, we can respawn here:
-      spawnTarget();
-    }, Number(intervalEl.value));
+    // Spawn logic
+    removeAllTargets();
+    maintainTargetCount(false);
+
+    // Normal mode has interval-based "refresh rhythm"
+    if (!unlimitedLifeEl.checked){
+      spawnTimer = setInterval(() => {
+        if (!running || ended) return;
+        // Instead of nuking everything, we gently ensure count and also "refresh" by expiring one occasionally
+        // Simple approach: if many targets, refresh 1 per tick
+        if (targets.size > 0){
+          const first = targets.keys().next().value;
+          if (first){
+            // expire one (no shot)
+            first.remove();
+            targets.delete(first);
+            const tid = lifeTimers.get(first);
+            if (tid) clearTimeout(tid);
+            lifeTimers.delete(first);
+          }
+        }
+        maintainTargetCount(false);
+      }, Number(intervalEl.value));
+    }
   }
 
   function pauseGame(){
@@ -523,31 +761,35 @@
     overlay.style.display = "flex";
     overlay.querySelector("h2").textContent = "일시정지";
     overlay.querySelector("p").innerHTML = `계속하려면 <b>시작</b>을 누르거나 <span class="kbd">Space</span>를 누르세요.`;
+
     clearTimers();
-    removeTarget();
+    removeAllTargets();
   }
 
   function endGame(){
     ended = true;
     running = false;
+
     clearTimers();
-    removeTarget();
+    removeAllTargets();
 
     setState("종료");
     overlay.style.display = "flex";
     overlay.querySelector("h2").textContent = "결과";
+
     const acc = shots === 0 ? 0 : (hits / shots) * 100;
     const avg = reactionTimes.length ? (reactionTimes.reduce((a,b)=>a+b,0)/reactionTimes.length) : 0;
 
     overlay.querySelector("p").innerHTML =
       `점수 <b>${score}</b> · 정확도 <b>${Math.round(acc)}%</b> · 평균 반응속도 <b>${reactionTimes.length ? Math.round(avg)+"ms" : "-"}</b><br>
        다시 하려면 <b>시작</b> 또는 <span class="kbd">R</span>.`;
+
     timeEl.textContent = "0.0s";
   }
 
   function resetGame(){
     clearTimers();
-    removeTarget();
+    removeAllTargets();
 
     running = false;
     ended = false;
@@ -566,6 +808,8 @@
     overlay.querySelector("h2").textContent = "에임 연습장";
     overlay.querySelector("p").innerHTML =
       `왼쪽에서 설정을 조절하고 <b>시작</b>을 누르세요.<br>목표: 제한 시간 동안 최대한 많이, 정확하게 맞추기.`;
+
+    applyRatio();
   }
 
   // Miss clicks: clicking arena but not target
@@ -573,35 +817,88 @@
     if (!running || ended) return;
     shots++;
     miss++;
+    sfxMiss();
     showFlash("bad");
     updateStats();
+  });
+
+  // Fullscreen
+  async function toggleFullscreen(){
+    try{
+      if (!document.fullscreenElement){
+        await arena.requestFullscreen();
+        fsBtn.textContent = "전체화면 해제";
+      } else {
+        await document.exitFullscreen();
+        fsBtn.textContent = "전체화면";
+      }
+    } catch(e){
+      // ignore
+    }
+  }
+
+  document.addEventListener("fullscreenchange", () => {
+    fsBtn.textContent = document.fullscreenElement ? "전체화면 해제" : "전체화면";
   });
 
   // Controls
   startBtn.addEventListener("click", startGame);
   pauseBtn.addEventListener("click", pauseGame);
   resetBtn.addEventListener("click", resetGame);
+  fsBtn.addEventListener("click", toggleFullscreen);
 
-  // Update spawn interval live (if running, restart timers neatly)
   function onSettingChange(){
     updateLabels();
+    applyRatio();
+
+    // If unlimited is on, life slider isn't used
+    lifeEl.disabled = unlimitedLifeEl.checked;
+    intervalEl.disabled = unlimitedLifeEl.checked; // 무제한 모드에서는 “맞추면 다음 타겟”이 핵심이라 간격 비활성화
+
     if (running && !ended){
-      // restart spawn loop with new interval/life/size, keep time running by pausing/resuming quickly
-      // simplest: pause and start fresh with same stats? No.
-      // We'll just restart spawn timer; tick stays.
-      if (spawnTimer) clearInterval(spawnTimer);
-      if (lifeTimer) clearTimeout(lifeTimer);
-      spawnTarget();
-      spawnTimer = setInterval(() => {
-        if (!running || ended) return;
-        spawnTarget();
-      }, Number(intervalEl.value));
+      // Restart spawn behavior safely (keep score/time running)
+      clearTimers();
+      // keep remaining time by adjusting startedAtPerf so remain doesn't jump:
+      const elapsed = performance.now() - startedAtPerf;
+      const remain = Math.max(0, tLeftMs - elapsed);
+      // restart tick with same remain
+      tLeftMs = remain;
+      startedAtPerf = performance.now();
+
+      tickTimer = setInterval(() => {
+        const elapsed2 = performance.now() - startedAtPerf;
+        const remain2 = Math.max(0, tLeftMs - elapsed2);
+        timeEl.textContent = (remain2/1000).toFixed(1) + "s";
+        if (remain2 <= 0) endGame();
+      }, 50);
+
+      // Rebuild targets to fit new size/count/mode cleanly
+      removeAllTargets();
+      maintainTargetCount(false);
+
+      if (!unlimitedLifeEl.checked){
+        spawnTimer = setInterval(() => {
+          if (!running || ended) return;
+          if (targets.size > 0){
+            const first = targets.keys().next().value;
+            if (first){
+              first.remove();
+              targets.delete(first);
+              const tid = lifeTimers.get(first);
+              if (tid) clearTimeout(tid);
+              lifeTimers.delete(first);
+            }
+          }
+          maintainTargetCount(false);
+        }, Number(intervalEl.value));
+      }
     } else {
       timeEl.textContent = Number(durationEl.value).toFixed(1) + "s";
     }
   }
 
-  [durationEl, sizeEl, intervalEl, lifeEl].forEach(el => el.addEventListener("input", onSettingChange));
+  [durationEl, sizeEl, intervalEl, lifeEl, countEl, ratioEl, unlimitedLifeEl, soundOnEl, volumeEl]
+    .forEach(el => el.addEventListener("input", onSettingChange));
 
   // Hotkeys
   window.addEventListener("keydown", (e) => {
@@ -613,10 +910,15 @@
     if (e.key.toLowerCase() === "r"){
       resetGame();
     }
+    if (e.key.toLowerCase() === "f"){
+      toggleFullscreen();
+    }
   });
 
   // Init
   updateLabels();
+  applyRatio();
+  onSettingChange();
   resetGame();
 })();
 </script>
