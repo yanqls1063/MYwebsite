@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Renatus</title>
+  <title>Vimutti</title>
   <style>
     :root{
-      --pink-1:#ff4fd8;
-      --pink-2:#ff7aa8;
+      /* 파스텔 계열 */
+      --pink:#ff8fcb;
+      --peach:#ffb7a8;
+      --yellow:#ffe08a;
+      --cream:#fff7ef;
+
       --bg-1:#ffffff;
-      --bg-2:#fff6fb;
+      --bg-2:#fff9fd;
       --text:#141418;
     }
 
@@ -19,26 +23,29 @@
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
       color:var(--text);
-      background:
-        radial-gradient(900px 520px at 50% 30%, rgba(255, 122, 168, .16), rgba(255, 122, 168, 0) 65%),
-        radial-gradient(700px 420px at 60% 70%, rgba(255, 79, 216, .10), rgba(255, 79, 216, 0) 70%),
-        linear-gradient(180deg, var(--bg-1), var(--bg-2));
       overflow:hidden;
+
+      /* 바탕: 흰색 + 아주 약한 톤 */
+      background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
     }
 
-    /* 은은한 빛 입자 느낌 */
-    .glow{
-      position:fixed; inset:-20%;
+    /* 배경 오로라(핑크+노랑) 애니메이션 */
+    .aurora{
+      position:fixed;
+      inset:-35%;
       background:
-        radial-gradient(circle at 30% 30%, rgba(255, 79, 216, .10), transparent 45%),
-        radial-gradient(circle at 70% 60%, rgba(255, 122, 168, .10), transparent 50%);
-      filter: blur(40px);
+        radial-gradient(900px 520px at 35% 30%, rgba(255, 143, 203, .16), transparent 60%),
+        radial-gradient(860px 520px at 70% 55%, rgba(255, 224, 138, .18), transparent 62%),
+        radial-gradient(740px 520px at 45% 75%, rgba(255, 183, 168, .12), transparent 60%);
+      filter: blur(46px);
       pointer-events:none;
-      animation: float 10s ease-in-out infinite alternate;
+      animation: auroraMove 14s ease-in-out infinite alternate;
+      transform: translate3d(0,0,0);
     }
-    @keyframes float{
-      from{ transform: translate3d(-1%, -1%, 0) scale(1.02); }
-      to{   transform: translate3d( 1%,  1%, 0) scale(1.05); }
+    @keyframes auroraMove{
+      0%   { transform: translate3d(-1.5%, -1.0%, 0) scale(1.02); }
+      50%  { transform: translate3d( 1.2%, -0.6%, 0) scale(1.05); }
+      100% { transform: translate3d( 0.8%,  1.4%, 0) scale(1.03); }
     }
 
     .wrap{
@@ -46,29 +53,30 @@
       display:grid;
       place-items:center;
       padding:24px;
+      position:relative;
     }
 
     .card{
       width:min(560px, 100%);
       text-align:center;
-      padding:40px 28px 32px;
-      border-radius:24px;
+      padding:42px 28px 34px;
+      border-radius:26px;
       background: rgba(255,255,255,.72);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 170, 210, .25);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 210, 230, .28);
       box-shadow:
         0 18px 60px rgba(20, 20, 24, .10),
-        0 2px 0 rgba(255,255,255,.6) inset;
+        0 2px 0 rgba(255,255,255,.65) inset;
     }
 
     h1{
       margin:0 0 10px;
-      font-size:34px;
-      letter-spacing:-0.02em;
+      font-size:36px;
+      letter-spacing:-0.03em;
     }
     p{
       margin:0 0 28px;
-      color: rgba(20,20,24,.68);
+      color: rgba(20,20,24,.66);
       line-height:1.55;
       font-size:15px;
     }
@@ -77,66 +85,89 @@
       appearance:none;
       border:0;
       cursor:pointer;
-      padding:14px 22px;
-      border-radius:16px;
-      font-weight:700;
+      padding:14px 24px;
+      border-radius:18px;
+      font-weight:750;
       font-size:16px;
       letter-spacing:-0.01em;
-      color:#fff;
-      background: linear-gradient(135deg, var(--pink-1), var(--pink-2));
+      color: rgba(20,20,24,.86);
+
+      /* 버튼이 너무 찐하지 않게: 밝고 연한 그라데이션 + 약한 투명 */
+      background: linear-gradient(
+        120deg,
+        rgba(255, 143, 203, .75),
+        rgba(255, 224, 138, .78),
+        rgba(255, 183, 168, .70)
+      );
+      background-size: 220% 220%;
+
+      /* 유리 느낌 + 은은한 그림자 */
       box-shadow:
-        0 10px 26px rgba(255, 79, 216, .32),
-        0 6px 14px rgba(255, 122, 168, .22),
-        0 1px 0 rgba(255,255,255,.35) inset;
+        0 14px 34px rgba(255, 170, 210, .22),
+        0 10px 22px rgba(255, 224, 138, .16),
+        0 1px 0 rgba(255,255,255,.75) inset;
+      backdrop-filter: blur(6px);
+
       transform: translateY(0);
-      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
       position:relative;
-      isolation:isolate;
+      overflow:hidden;
+
+      /* 그라데이션 애니메이션 */
+      animation: gradientFlow 3.6s ease-in-out infinite;
     }
 
-    /* 버튼 "광" */
-    .start-btn::before{
-      content:"";
-      position:absolute; inset:-2px;
-      border-radius:18px;
-      background: linear-gradient(135deg, rgba(255,255,255,.55), rgba(255,255,255,0));
-      filter: blur(10px);
-      opacity:.55;
-      z-index:-1;
-    }
+    /* 버튼 위에 '광택' */
     .start-btn::after{
       content:"";
       position:absolute;
-      inset:2px 2px auto 2px;
-      height:42%;
-      border-radius:14px;
-      background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0));
+      left:-40%;
+      top:-60%;
+      width:60%;
+      height:220%;
+      transform: rotate(22deg);
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0),
+        rgba(255,255,255,.40),
+        rgba(255,255,255,0)
+      );
+      opacity:.7;
+      filter: blur(2px);
+      animation: sheen 2.8s ease-in-out infinite;
       pointer-events:none;
-      opacity:.9;
+    }
+
+    @keyframes gradientFlow{
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes sheen{
+      0%   { transform: translateX(-10%) rotate(22deg); opacity:.35; }
+      45%  { opacity:.75; }
+      100% { transform: translateX(240%) rotate(22deg); opacity:.35; }
     }
 
     .start-btn:hover{
       transform: translateY(-1px);
+      filter: saturate(1.03) brightness(1.02);
       box-shadow:
-        0 14px 36px rgba(255, 79, 216, .38),
-        0 10px 22px rgba(255, 122, 168, .26),
-        0 1px 0 rgba(255,255,255,.35) inset;
-      filter:saturate(1.05);
+        0 18px 44px rgba(255, 170, 210, .26),
+        0 14px 30px rgba(255, 224, 138, .20),
+        0 1px 0 rgba(255,255,255,.75) inset;
     }
     .start-btn:active{
       transform: translateY(1px);
-      box-shadow:
-        0 10px 24px rgba(255, 79, 216, .28),
-        0 6px 14px rgba(255, 122, 168, .20),
-        0 1px 0 rgba(255,255,255,.30) inset;
+      filter: saturate(1.01) brightness(.99);
     }
     .start-btn:focus-visible{
       outline:none;
       box-shadow:
-        0 0 0 4px rgba(255, 79, 216, .18),
-        0 14px 36px rgba(255, 79, 216, .38),
-        0 10px 22px rgba(255, 122, 168, .26),
-        0 1px 0 rgba(255,255,255,.35) inset;
+        0 0 0 5px rgba(255, 224, 138, .20),
+        0 18px 44px rgba(255, 170, 210, .26),
+        0 14px 30px rgba(255, 224, 138, .20),
+        0 1px 0 rgba(255,255,255,.75) inset;
     }
 
     .hint{
@@ -147,11 +178,11 @@
   </style>
 </head>
 <body>
-  <div class="glow"></div>
+  <div class="aurora"></div>
 
   <main class="wrap">
     <section class="card" aria-label="start">
-      <h1>Renatus</h1>
+      <h1>Vimutti</h1>
       <p>지구에서의 어느 한 종으로 환생해, 주어진 환경에 생존하세요.</p>
 
       <button class="start-btn" id="startBtn">시작하기</button>
@@ -161,9 +192,9 @@
 
   <script>
     const start = () => {
-      // 다음 페이지로 이동(너가 라우팅에 맞게 바꾸면 됨)
+      // 다음 화면 연결할 때 여기만 바꾸면 됨
       // location.href = "./game.html";
-      alert("게임 시작! (여기서 다음 화면으로 연결하면 돼)");
+      alert("게임 시작! (다음 화면으로 연결하면 돼)");
     };
 
     document.getElementById("startBtn").addEventListener("click", start);
